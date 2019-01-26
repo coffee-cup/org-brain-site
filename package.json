@@ -1,0 +1,13 @@
+{
+  "name": "brain-site",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "org": "^0.2.0"
+  }
+}
