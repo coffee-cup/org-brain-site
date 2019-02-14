@@ -5,9 +5,10 @@ import * as _ from "lodash";
 import mkdirp from "mkdirp";
 import { OrgDoc, Doc, Html, LinkSection } from "./types";
 import { createHtml } from "./html";
-import { buildDir } from "./paths";
+import { buildDir, getOrgFile, indexFile } from "./paths";
 
 const parser = new org.Parser();
+const visited: { [key: string]: OrgDoc } = {};
 
 const interpreterFile = "/Users/jakerunzer/Dropbox/org/brain/haskell.org";
 
@@ -48,15 +49,15 @@ ${list.map(s => toListItem(toPageLink(s))).join("\n")}
 `.trimLeft();
 };
 
-const readOrgFile = (file: string): string => {
-  const contents = fs.readFileSync(file, "utf8");
+const readOrgFile = (filename: string): string => {
+  const contents = fs.readFileSync(filename, "utf8");
   const modifiedContents = moveResourcesToBottom(contents);
   return modifiedContents;
 };
 
 const getBrainProperty = (p: string) => (doc: Doc): string[] => {
-  const prop = doc.directiveValues[`${p}:`] || [];
-  return prop.split(" ");
+  const prop = doc.directiveValues[`${p}:`] || "";
+  return prop !== "" ? prop.split(" ").filter(s => s !== "index") : [];
 };
 
 const getParents = getBrainProperty("brain_parents");
@@ -95,17 +96,25 @@ const parseOrgFile = (filename: string): OrgDoc => {
   const friends = getFriends(baseDoc);
   const children = getChildren(baseDoc);
 
+  const linkSections = [];
+  if (parents.length !== 0) {
+    linkSections.push(createLinkSection("Parents", parents));
+  }
+  if (friends.length !== 0) {
+    linkSections.push(createLinkSection("Friends", friends));
+  }
+  if (children.length !== 0) {
+    linkSections.push(createLinkSection("Children", children));
+  }
+
   const html: Html = {
     orgHtml,
-    linkSections: [
-      createLinkSection("Parents", parents),
-      createLinkSection("Friends", friends),
-      createLinkSection("Children", children),
-    ],
+    linkSections,
   };
 
   const basename = path.basename(filename, path.extname(filename));
-  const outDir = path.resolve(buildDir, basename);
+  const outDir =
+    basename === "index" ? buildDir : path.resolve(buildDir, basename);
   const outFile = path.resolve(outDir, "./index.html");
   const title = baseDoc.title || basename;
 
@@ -128,7 +137,30 @@ const saveOrgDoc = (orgDoc: OrgDoc) => {
   fs.writeFileSync(orgDoc.outFile, htmlString);
 };
 
-const orgDoc = parseOrgFile(interpreterFile);
-saveOrgDoc(orgDoc);
+const visit = (name: string) => {
+  if (visited[name]) {
+    return;
+  }
 
-// console.log(orgDoc);
+  console.log(`visiting ${name}`);
+
+  const filename = getOrgFile(name);
+  const orgDoc = parseOrgFile(filename);
+
+  visited[name] = orgDoc;
+
+  orgDoc.parents.forEach(visit);
+  orgDoc.friends.forEach(visit);
+  orgDoc.children.forEach(visit);
+};
+
+const saveAllDocs = () => {
+  console.log("saving all");
+  Object.values(visited).forEach(orgDoc => {
+    console.log(`saving ${orgDoc.title}`);
+    saveOrgDoc(orgDoc);
+  });
+};
+
+visit(indexFile);
+saveAllDocs();
