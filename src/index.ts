@@ -1,12 +1,12 @@
 import org from "org";
 import fs from "fs";
 import path from "path";
+import * as _ from "lodash";
 import mkdirp from "mkdirp";
 
 type Doc = any;
 
 interface OrgDoc {
-  doc: Doc;
   title: string;
   filename: string;
   outDir: string;
@@ -20,12 +20,49 @@ interface OrgDoc {
 const parser = new org.Parser();
 
 const interpreterFile = "/Users/jakerunzer/Dropbox/org/brain/haskell.org";
-const buildDir = path.resolve("./build");
+const buildDir = path.resolve("./site");
 
-const readOrgFile = (file: string) => {
+const resourceRegex = /:RESOURCES:(.*\s)*:END:/m;
+const moveResourcesToBottom = (contents: string): string => {
+  const match = resourceRegex.exec(contents);
+
+  let resources = "";
+  let newContents = contents;
+
+  if (match && match.length > 0) {
+    resources = match[0];
+
+    newContents = newContents.replace(resources, "");
+    resources = resources.replace(":RESOURCES:", "").replace(":END:", "");
+    newContents = `
+${newContents}
+
+* Resources
+
+${resources}
+`.trim();
+  }
+
+  return newContents;
+};
+
+const addListSection = (title: string, list: string[]): any => {
+  const toPageLink = (page: string): string =>
+    `[[/${page}][${_.upperFirst(page)}]]`;
+
+  const toListItem = (item: string): string => `- ${item}`;
+
+  return `
+* ${_.upperFirst(title)}
+
+${list.map(s => toListItem(toPageLink(s))).join("\n")}
+`.trimLeft();
+};
+
+const readOrgFile = (file: string): string => {
   const contents = fs.readFileSync(file, "utf8");
-  const orgDocument = parser.parse(contents);
-  return orgDocument;
+  const modifiedContents = moveResourcesToBottom(contents);
+  return modifiedContents;
 };
 
 const getBrainProperty = (p: string) => (doc: Doc): string[] => {
@@ -34,36 +71,54 @@ const getBrainProperty = (p: string) => (doc: Doc): string[] => {
 };
 
 const getParents = getBrainProperty("brain_parents");
-const getChildren = getBrainProperty("brain_friends");
 const getFriends = getBrainProperty("brain_friends");
+const getChildren = getBrainProperty("brain_children");
 const getTitle = doc => doc.title;
 
 const createHtml = (doc: Doc): string => {
+  doc.options.toc = false;
+
   const orgHtmlDocument = doc.convert(org.ConverterHTML, {
     headerOffset: 1,
     exportFromLineNumber: false,
     suppressSubScriptHandling: false,
     suppressAutoLink: false,
+    toc: false,
   });
 
   return orgHtmlDocument.toString();
 };
 
 const parseOrgFile = (filename: string): OrgDoc => {
-  const doc = readOrgFile(filename);
+  const contents = readOrgFile(filename);
+  const baseDoc = parser.parse(contents);
+  const baseHtml = createHtml(baseDoc);
+
+  const parents = getParents(baseDoc);
+  const friends = getFriends(baseDoc);
+  const children = getChildren(baseDoc);
+
+  let linkContents = addListSection("Parents", parents);
+  linkContents += addListSection("Friends", friends);
+  linkContents += addListSection("Children", children);
+
+  const linkDoc = parser.parse(linkContents);
+  const linkHtml = createHtml(linkDoc);
+
+  const html = `
+${baseHtml}
+
+<div class="links">
+  ${linkHtml}
+</div>
+`.trim();
 
   const basename = path.basename(filename, path.extname(filename));
   const outDir = path.resolve(buildDir, basename);
   const outFile = path.resolve(outDir, "./index.html");
-  const title = doc.title || basename;
-  const html = createHtml(doc);
-
-  const parents = getParents(doc);
-  const children = getChildren(doc);
-  const friends = getFriends(doc);
+  const title = baseDoc.title || basename;
 
   return {
-    doc,
     title,
     filename,
     outDir,
@@ -75,22 +130,12 @@ const parseOrgFile = (filename: string): OrgDoc => {
   };
 };
 
-const saveOrgFile = (orgFile: OrgDoc) => {
-  mkdirp.sync(orgFile.outDir);
-  fs.writeFileSync(orgFile.outFile, orgFile.html);
+const saveOrgDoc = (orgDoc: OrgDoc) => {
+  mkdirp.sync(orgDoc.outDir);
+  fs.writeFileSync(orgDoc.outFile, orgDoc.html);
 };
 
 const orgDoc = parseOrgFile(interpreterFile);
-console.log(orgDoc);
+saveOrgDoc(orgDoc);
 
-// const parents = getParents(doc);
-// const children = getChildren(doc);
-// const friends = getFriends(doc);
-// const title = getTitle(doc);
-
-// console.log(`Title: ${title}`);
-// console.log(`Parents: ${parents.join(" ")}`);
-// console.log(`Children: ${children.join(" ")}`);
-// console.log(`Friends: ${friends.join(" ")}`);
-
-// console.log(createHtml(doc));
+// console.log(orgDoc);

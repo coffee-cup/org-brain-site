@@ -5,15 +5,18 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "build": "tsc -p .",
     "tsc": "tsc --noemit -p .",
     "tslint": "tslint --config ./tslint.json '{src,test}/**/*.ts{,x}'",
     "tslint:fix": "tslint --config ./tslint.json --fix '{src,test}/**/*.ts{,x}'"
   },
   "dependencies": {
+    "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
-    "org": "^0.2.0"
+    "org": "https://github.com/coffee-cup/org-js.git"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.121",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^10.12.21",
     "ts-node": "^7.0.1",
