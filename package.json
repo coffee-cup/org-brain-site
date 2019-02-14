@@ -5,8 +5,10 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc -p .",
     "tsc": "tsc --noemit -p .",
+    "copy": "cp -r public/* site",
+    "build": "yarn run clean && yarn run start && yarn run copy",
+    "clean": "rimraf site",
     "tslint": "tslint --config ./tslint.json '{src,test}/**/*.ts{,x}'",
     "tslint:fix": "tslint --config ./tslint.json --fix '{src,test}/**/*.ts{,x}'"
   },
@@ -21,6 +23,7 @@
     "@types/mkdirp": "^0.5.2",
     "@types/mustache": "^0.8.32",
     "@types/node": "^10.12.21",
+    "rimraf": "^2.6.3",
     "ts-node": "^7.0.1",
     "tslint": "^5.12.1",
     "tslint-config-prettier": "^1.17.0",

@@ -32,24 +32,33 @@
 
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
+
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+    <link type="text/css" rel="stylesheet" href="/main.css" />
   </head>
   <body>
 
-    {{{orgHtml}}}
+    <div class="main">
+      <header>
+        <a href="/">Brain</a>
+      </header>
 
-    <div class="links">
-      {{#linkSections}}
-      <div class="link-section {{title}}">
-	<h2 id="{{title}}">{{title}}</h2>
-        <ul>
-          {{#links}}
-	  <li>
-	    <a href="{{linkTo}}">{{text}}</a>
-	  </li>
-          {{/links}}
-        </ul>
+      {{{orgHtml}}}
+
+      <div class="links">
+        {{#linkSections}}
+        <div class="link-section {{title}}">
+          <h2 id="{{title}}">{{title}}</h2>
+          <ul>
+            {{#links}}
+            <li>
+              <a href="{{linkTo}}">{{text}}</a>
+            </li>
+            {{/links}}
+          </ul>
+        </div>
+        {{/linkSections}}
       </div>
-      {{/linkSections}}
     </div>
 
   </body>

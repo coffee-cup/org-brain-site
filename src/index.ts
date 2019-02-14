@@ -84,6 +84,14 @@ const createLinkSection = (title: string, links: string[]): LinkSection => ({
 const parseOrgFile = (filename: string): OrgDoc => {
   const contents = readOrgFile(filename);
   const baseDoc = parser.parse(contents);
+
+  const basename = path.basename(filename, path.extname(filename));
+  const outDir =
+    basename === "index" ? buildDir : path.resolve(buildDir, basename);
+  const outFile = path.resolve(outDir, "./index.html");
+  const title = baseDoc.title || _.upperFirst(basename);
+  baseDoc.title = title;
+
   const orgHtml = createOrgHtml(baseDoc);
 
   const parents = getParents(baseDoc);
@@ -105,12 +113,6 @@ const parseOrgFile = (filename: string): OrgDoc => {
     orgHtml,
     linkSections,
   };
-
-  const basename = path.basename(filename, path.extname(filename));
-  const outDir =
-    basename === "index" ? buildDir : path.resolve(buildDir, basename);
-  const outFile = path.resolve(outDir, "./index.html");
-  const title = baseDoc.title || basename;
 
   return {
     title,

@@ -1,0 +1,46 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    font-family: sans-serif;
+}
+
+header {
+}
+
+header a {
+    color: black;
+    font-weight: bold;
+    font-size: 1.5em;
+    text-transform: lowercase;
+    text-decoration: none;
+    transition: opacity 250ms ease-in-out;
+}
+
+header a:hover {
+    opacity: 0.5;
+}
+
+.main {
+    padding: 2rem;
+}
+
+.section-number {
+    display: none;
+}
+
+.links {
+    display: flex;
+}
+
+.link-section {
+    padding: 0 2rem;
+}
+
+.link-section:first-child {
+    padding-left: 0;
+}
+
+.link-section:last-child {
+    padding-right: 0;
+}

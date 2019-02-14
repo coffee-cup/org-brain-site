@@ -8,4 +8,4 @@ export const getOrgFile = (name: string): string =>
 
 export const indexFile = "index";
 
-export const blacklisted = ["london", "interview"];
+export const blacklisted = ["london", "interview", "styx", "krill", "prodoai"];
