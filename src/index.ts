@@ -5,7 +5,7 @@ import * as _ from "lodash";
 import mkdirp from "mkdirp";
 import { OrgDoc, Doc, Html, LinkSection } from "./types";
 import { createHtml } from "./html";
-import { buildDir, getOrgFile, indexFile } from "./paths";
+import { buildDir, getOrgFile, indexFile, blacklisted } from "./paths";
 
 const parser = new org.Parser();
 const visited: { [key: string]: OrgDoc } = {};
@@ -23,7 +23,15 @@ const moveResourcesToBottom = (contents: string): string => {
     resources = match[0];
 
     newContents = newContents.replace(resources, "");
-    resources = resources.replace(":RESOURCES:", "").replace(":END:", "");
+    resources = resources
+      .replace(":RESOURCES:", "")
+      .replace(":END:", "")
+      .trim();
+
+    if (resources === "") {
+      return newContents;
+    }
+
     newContents = `
 ${newContents}
 
@@ -57,7 +65,9 @@ const readOrgFile = (filename: string): string => {
 
 const getBrainProperty = (p: string) => (doc: Doc): string[] => {
   const prop = doc.directiveValues[`${p}:`] || "";
-  return prop !== "" ? prop.split(" ").filter(s => s !== "index") : [];
+  return prop !== ""
+    ? prop.split(" ").filter(s => s !== "index" && !blacklisted.includes(s))
+    : [];
 };
 
 const getParents = getBrainProperty("brain_parents");
@@ -142,8 +152,6 @@ const visit = (name: string) => {
     return;
   }
 
-  console.log(`visiting ${name}`);
-
   const filename = getOrgFile(name);
   const orgDoc = parseOrgFile(filename);
 
@@ -155,9 +163,7 @@ const visit = (name: string) => {
 };
 
 const saveAllDocs = () => {
-  console.log("saving all");
   Object.values(visited).forEach(orgDoc => {
-    console.log(`saving ${orgDoc.title}`);
     saveOrgDoc(orgDoc);
   });
 };

@@ -7,3 +7,5 @@ export const getOrgFile = (name: string): string =>
   `/Users/jakerunzer/Dropbox/org/brain/${name}.org`;
 
 export const indexFile = "index";
+
+export const blacklisted = ["london", "interview"];
