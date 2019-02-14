@@ -13,11 +13,13 @@
   "dependencies": {
     "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
+    "mustache": "^3.0.1",
     "org": "https://github.com/coffee-cup/org-js.git"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.121",
     "@types/mkdirp": "^0.5.2",
+    "@types/mustache": "^0.8.32",
     "@types/node": "^10.12.21",
     "ts-node": "^7.0.1",
     "tslint": "^5.12.1",

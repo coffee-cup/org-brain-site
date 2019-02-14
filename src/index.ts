@@ -3,24 +3,13 @@ import fs from "fs";
 import path from "path";
 import * as _ from "lodash";
 import mkdirp from "mkdirp";
-
-type Doc = any;
-
-interface OrgDoc {
-  title: string;
-  filename: string;
-  outDir: string;
-  outFile: string;
-  html: string;
-  parents: string[];
-  children: string[];
-  friends: string[];
-}
+import { OrgDoc, Doc, Html, LinkSection } from "./types";
+import { createHtml } from "./html";
+import { buildDir } from "./paths";
 
 const parser = new org.Parser();
 
 const interpreterFile = "/Users/jakerunzer/Dropbox/org/brain/haskell.org";
-const buildDir = path.resolve("./site");
 
 const resourceRegex = /:RESOURCES:(.*\s)*:END:/m;
 const moveResourcesToBottom = (contents: string): string => {
@@ -75,7 +64,7 @@ const getFriends = getBrainProperty("brain_friends");
 const getChildren = getBrainProperty("brain_children");
 const getTitle = doc => doc.title;
 
-const createHtml = (doc: Doc): string => {
+const createOrgHtml = (doc: Doc): string => {
   doc.options.toc = false;
 
   const orgHtmlDocument = doc.convert(org.ConverterHTML, {
@@ -89,29 +78,31 @@ const createHtml = (doc: Doc): string => {
   return orgHtmlDocument.toString();
 };
 
+const createLinkSection = (title: string, links: string[]): LinkSection => ({
+  title,
+  links: links.map(l => ({
+    text: _.upperFirst(l),
+    linkTo: `/${l}`,
+  })),
+});
+
 const parseOrgFile = (filename: string): OrgDoc => {
   const contents = readOrgFile(filename);
   const baseDoc = parser.parse(contents);
-  const baseHtml = createHtml(baseDoc);
+  const orgHtml = createOrgHtml(baseDoc);
 
   const parents = getParents(baseDoc);
   const friends = getFriends(baseDoc);
   const children = getChildren(baseDoc);
 
-  let linkContents = addListSection("Parents", parents);
-  linkContents += addListSection("Friends", friends);
-  linkContents += addListSection("Children", children);
-
-  const linkDoc = parser.parse(linkContents);
-  const linkHtml = createHtml(linkDoc);
-
-  const html = `
-${baseHtml}
-
-<div class="links">
-  ${linkHtml}
-</div>
-`.trim();
+  const html: Html = {
+    orgHtml,
+    linkSections: [
+      createLinkSection("Parents", parents),
+      createLinkSection("Friends", friends),
+      createLinkSection("Children", children),
+    ],
+  };
 
   const basename = path.basename(filename, path.extname(filename));
   const outDir = path.resolve(buildDir, basename);
@@ -132,7 +123,9 @@ ${baseHtml}
 
 const saveOrgDoc = (orgDoc: OrgDoc) => {
   mkdirp.sync(orgDoc.outDir);
-  fs.writeFileSync(orgDoc.outFile, orgDoc.html);
+
+  const htmlString = createHtml(orgDoc.html);
+  fs.writeFileSync(orgDoc.outFile, htmlString);
 };
 
 const orgDoc = parseOrgFile(interpreterFile);
