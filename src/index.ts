@@ -10,8 +10,6 @@ import { buildDir, getOrgFile, indexFile, blacklisted } from "./paths";
 const parser = new org.Parser();
 const visited: { [key: string]: OrgDoc } = {};
 
-const interpreterFile = "/Users/jakerunzer/Dropbox/org/brain/haskell.org";
-
 const resourceRegex = /:RESOURCES:(.*\s)*:END:/m;
 const moveResourcesToBottom = (contents: string): string => {
   const match = resourceRegex.exec(contents);
@@ -44,19 +42,6 @@ ${resources}
   return newContents;
 };
 
-const addListSection = (title: string, list: string[]): any => {
-  const toPageLink = (page: string): string =>
-    `[[/${page}][${_.upperFirst(page)}]]`;
-
-  const toListItem = (item: string): string => `- ${item}`;
-
-  return `
-* ${_.upperFirst(title)}
-
-${list.map(s => toListItem(toPageLink(s))).join("\n")}
-`.trimLeft();
-};
-
 const readOrgFile = (filename: string): string => {
   const contents = fs.readFileSync(filename, "utf8");
   const modifiedContents = moveResourcesToBottom(contents);
@@ -73,7 +58,6 @@ const getBrainProperty = (p: string) => (doc: Doc): string[] => {
 const getParents = getBrainProperty("brain_parents");
 const getFriends = getBrainProperty("brain_friends");
 const getChildren = getBrainProperty("brain_children");
-const getTitle = doc => doc.title;
 
 const createOrgHtml = (doc: Doc): string => {
   doc.options.toc = false;
