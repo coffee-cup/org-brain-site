@@ -9,6 +9,7 @@ export interface LinkSection {
 }
 
 export interface Html {
+  title: string;
   orgHtml: string;
   linkSections: LinkSection[];
 }

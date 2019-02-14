@@ -1,0 +1,35 @@
+header {
+    margin-bottom: 2rem;
+}
+
+header a {
+    font-weight: bold;
+    font-size: 1.5em;
+    text-transform: lowercase;
+    text-decoration: none;
+    transition: opacity 250ms ease-in-out;
+}
+
+header a:hover {
+    opacity: 0.5;
+}
+
+.section-number {
+    display: none;
+}
+
+.links {
+    display: flex;
+}
+
+.link-section {
+    padding: 0 2rem;
+}
+
+.link-section:first-child {
+    padding-left: 0;
+}
+
+.link-section:last-child {
+    padding-right: 0;
+}

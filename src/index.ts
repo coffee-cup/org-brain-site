@@ -51,7 +51,10 @@ const readOrgFile = (filename: string): string => {
 const getBrainProperty = (p: string) => (doc: Doc): string[] => {
   const prop = doc.directiveValues[`${p}:`] || "";
   return prop !== ""
-    ? prop.split(" ").filter(s => s !== "index" && !blacklisted.includes(s))
+    ? prop
+        .split(" ")
+        .filter(s => s !== "index" && !blacklisted.includes(s))
+        .sort()
     : [];
 };
 
@@ -99,17 +102,21 @@ const parseOrgFile = (filename: string): OrgDoc => {
   const children = getChildren(baseDoc);
 
   const linkSections = [];
+
   if (parents.length !== 0) {
     linkSections.push(createLinkSection("Parents", parents));
   }
+
   if (friends.length !== 0) {
     linkSections.push(createLinkSection("Friends", friends));
   }
+
   if (children.length !== 0) {
     linkSections.push(createLinkSection("Children", children));
   }
 
   const html: Html = {
+    title,
     orgHtml,
     linkSections,
   };
