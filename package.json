@@ -7,9 +7,10 @@
     "start": "nodemon",
     "site": "ts-node src/index.ts && yarn run copy",
     "tsc": "tsc --noemit -p .",
-    "copy": "cp -r public/* site",
+    "copy": "cp -r public/ site",
     "build": "yarn run clean && yarn run site && yarn run copy",
     "clean": "rimraf site",
+    "deploy": "./deploy.sh",
     "tslint": "tslint --config ./tslint.json '{src,test}/**/*.ts{,x}'",
     "tslint:fix": "tslint --config ./tslint.json --fix '{src,test}/**/*.ts{,x}'"
   },
